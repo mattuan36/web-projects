@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Flask App</title>
-    </head>
-    <body>
-        <h2>Welcome to Flask</h2>
-        <p>this is a basic template</p>
-    </body>
+<head>
+    <title>FlaskTest</title>
+</head>
+<body>
+    <h2>Welcome To My Website</h2>
+    <h4>Flask: Rendering Templates</h4>
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('about') }}">About</a>
+
+    <p>This is a Flask application.</p>
+
+    {% block body %}
+    {% endblock %}
+</body>
 </html>
