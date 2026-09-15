@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Data{% endblock %}
+
+{% block content %}
+<!-- 1. Section Title -->
+<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+    <h2 class="fw-bold text-secondary">Southbound Arrivals Near Home</h2>
+</div>
+
+<!-- Table Container -->
+{% if results and results|length > 0 %}
+<div class="card shadow-sm mb-5">
+    <div class="card-body p-4">
+        <div class="table-responsive">
+            <!-- 2. Target Table (Notice the added id="interactiveTable") -->
+            <table id="interactiveTable" class="table table-striped table-hover table-bordered align-middle w-100">
+                <thead class="table-dark">
+                    <tr>
+                        {% for header in results[0] %}
+                            <th scope="col">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in results[1:] %}
+                        <tr>
+                            {% for cell in row %}
+                                <td>{{ cell }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+    <div class="alert alert-warning" role="alert">
+        No records found to display.
+    </div>
+{% endif %}
+
+<!-- 3. Styles & Scripts required for Bootstrap 5 DataTables -->
+<!-- Note: You can also place these CSS links inside your base.html head block if preferred -->
+<link rel="stylesheet" href="https://datatables.net">
+<script src="https://jquery.com"></script>
+<script src="https://datatables.net"></script>
+<script src="https://datatables.net"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#interactiveTable').DataTable({
+            "pageLength": 10, // Default number of rows per page
+            "lengthMenu": [5, 10, 25, 50], // Page size options for the user
+            "language": {
+                "search": "Filter records:", // Customize search box label text
+                "placeholder": "Type to filter..."
+            }
+        });
+    });
+</script>
+{% endblock %}

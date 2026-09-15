@@ -36,7 +36,7 @@ def parse_results(output):
 
 
     output_table = []
-    output_table.append(["Location", "Line", "ETA"])
+    output_table.append(["Location", "Line", "ETA (min)"])
     for item in output["resultSet"]["arrival"]:
         location = locations[item["locid"]]
         line = item["shortSign"]
@@ -57,7 +57,7 @@ def parse_results(output):
         if estimated is None:
             continue
         eta = estimated - int(time.time() * 1000)
-        etaMin = round(eta/60000,2)
+        etaMin = round(eta/60000,1)
         output_table.append([location, line, etaMin])
 
     return output_table

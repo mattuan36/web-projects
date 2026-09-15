@@ -1,16 +1,12 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Matts Tools</title>
-</head>
-<body>
-    <h2>Welcome To Matt's Internet Tools</h2>
-    <h3>Click below for transit trackers</h3>
-    <a href="{{ url_for('home') }}">Home</a>
-    <a href="{{ url_for('work') }}">Work</a>
-    <a href="{{ url_for('about') }}">About</a>
+{% extends 'base.html' %}
 
-    {% block body %}
-    {% endblock %}
-</body>
-</html>
+{% block title %}Home - Matt's Web Tools{% endblock %}
+
+{% block content %}
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to my Flask Application</h1>
+            <p class="col-md-8 fs-4">This website is styled using Bootstrap 5 and structured using Bootstrap-Flask macros.</p>
+        </div>
+    </div>
+{% endblock %}
