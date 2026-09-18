@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Data{% endblock %}
+
+{% block content %}
+<!-- 1. Section Title -->
+<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+    <h2 class="fw-bold text-secondary">Transit Tracker</h2>
+</div>
+
+<div class="bg-light border-bottom py-2">
+  <div class="container">
+    <ul class="nav">
+      <li class="nav-item">
+        <a class="nav-link link-secondary px-2" href="{{ url_for('transithome') }}">Home</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link link-secondary px-2" href="{{ url_for('transitwork') }}">Work</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link link-secondary px-2" href="#">Current Location</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+{% block transitblock %}
+<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+    <h5 class="fw-bold text-secondary">Click an item above to see transit arrival times</h5>
+</div>
+{% endblock %}
+{% endblock %}

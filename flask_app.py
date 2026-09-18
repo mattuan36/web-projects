@@ -12,10 +12,14 @@ bootstrap = Bootstrap5(app)
 def index():
     return render_template("index.html")
 
-@app.route("/about")
+@app.route("/about/")
 def about():
     sites = ['twitter', 'facebook', 'instagram']
     return render_template("about.html", sites=sites)
+
+@app.route("/transit/")
+def transit():
+    return render_template("transit.html")
 
 @app.route("/transit/home")
 def transithome():

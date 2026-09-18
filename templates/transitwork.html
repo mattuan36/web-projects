@@ -1,17 +1,22 @@
-{% extends 'base.html' %}
+{% extends 'transit.html' %}
 
 {% block title %}Dashboard Data{% endblock %}
 
-{% block content %}
+{% block transitblock %}
 <!-- 1. Section Title -->
 <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
-    <h2 class="fw-bold text-secondary">Northbound Arrivals Near Work</h2>
+    <h4 class="fw-bold text-secondary">Northbound Arrivals Near Work</h4>
+</div>
+<div class="d-flex justify-content-center align-items-center gap-5 mb-3 mt-2">
+    <h5> Travel Time to MAX: 9 min</h5>
+    <h5> Travel Time to Bus: 7 min</h5>
 </div>
 
 <!-- Table Container -->
 {% if results and results|length > 0 %}
 <div class="card shadow-sm mb-5">
     <div class="card-body p-4">
+        <!-- Responsive Wrapper -->
         <div class="table-responsive">
             <!-- 2. Target Table (Notice the added id="interactiveTable") -->
             <table id="interactiveTable" class="table table-striped table-hover table-bordered align-middle w-100">

@@ -1,11 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'transit.html' %}
 
 {% block title %}Dashboard Data{% endblock %}
 
-{% block content %}
+{% block transitblock %}
 <!-- 1. Section Title -->
 <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
-    <h2 class="fw-bold text-secondary">Southbound Arrivals Near Home</h2>
+    <h4 class="fw-bold text-secondary">Southbound Arrivals Near Home</h4>
+</div>
+<div class="d-flex justify-content-center align-items-center gap-5 mb-3 mt-2">
+    <h5> Travel Time to MAX: 9 min</h5>
+    <h5> Travel Time to Bus: 2 min</h5>
 </div>
 
 <!-- Table Container -->
