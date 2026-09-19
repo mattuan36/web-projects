@@ -4,6 +4,7 @@
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
 import transit_tracker
+import weather_tracker
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
@@ -32,6 +33,12 @@ def transitwork():
     input_list = [7789, 13123]
     results = transit_tracker.lookup(input_list)
     return render_template("transitwork.html", results=results)
+
+@app.route("/weather/")
+def weather():
+    input_coords = [45.55, -122.69] # Portland, OR
+    results = weather_tracker.get_hourly_weather_data(input_coords)
+    return render_template("weather.html", results=results)
 
 
 if __name__ == "__main__":

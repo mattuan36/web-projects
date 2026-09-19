@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Weather Dashboard{% endblock %}
+
+{% block content %}
+<!-- 1. Section Title -->
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Hourly Metrics Log</h2>
+
+    <!-- Table Responsive container prevents layout breakages -->
+    <div class="container bg-white p-4 rounded shadow-sm">
+        <h3 class="mb-4 text-center">Hourly Forecast</h3>
+
+        <!-- table-responsive ensures horizontal scrolling on small screens -->
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle text-center mb-0">
+
+                <!-- Row 1: Hours -->
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="text-start">Time</th>
+                        {% for row in weather_data %}
+                        <th scope="col" style="min-width: 90px;">{{ row.hour }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <!-- Row 2: Weather Symbols -->
+                    <tr>
+                        <th scope="row" class="text-start table-light">Weather</th>
+                        {% for row in weather_data %}
+                        <td class="fs-2">{{ row.weather_symbol }}</td>
+                        {% endfor %}
+                    </tr>
+
+                    <!-- Row 3: Apparent Temperature -->
+                    <tr>
+                        <th scope="row" class="text-start table-light">Apparent Temp</th>
+                        {% for row in weather_data %}
+                        <td class="fw-bold text-muted">{{ row.apparent_temp }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+{% block weatherblock %}
+<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+    <h5 class="fw-bold text-secondary">Additional weather blocks</h5>
+</div>
+{% endblock %}
+{% endblock %}
