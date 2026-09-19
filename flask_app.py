@@ -37,8 +37,8 @@ def transitwork():
 @app.route("/weather/")
 def weather():
     input_coords = [45.55, -122.69] # Portland, OR
-    results = weather_tracker.get_hourly_weather_data(input_coords)
-    return render_template("weather.html", results=results)
+    hourly_weather_data = weather_tracker.get_hourly_weather_data(input_coords)
+    return render_template("weather.html", hourly_weather_data=hourly_weather_data)
 
 
 if __name__ == "__main__":

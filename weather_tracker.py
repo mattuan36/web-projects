@@ -18,40 +18,60 @@ def get_hourly_weather_data(input_coords):
     params = {
         "latitude": input_coords[0],
         "longitude": input_coords[1],
-        "hourly": ["apparent_temperature", "precipitation_probability", "precipitation", "weather_code", "pressure_msl"],
+        "hourly": ["apparent_temperature", "precipitation_probability", "precipitation", "weather_code", "is_day", "pressure_msl"],
 	    "temperature_unit": "fahrenheit",
 	    "precipitation_unit": "inch",
         "timezone": "America/Los_Angeles",
         "past_days": 1,  # Includes yesterday's data
-        "forecast_days": 1,  # Includes today's data
+        "forecast_days": 2,  # Includes today's data
     }
     responses = openmeteo.weather_api(url, params = params)
 
     # Process first location. Add a for-loop for multiple locations or weather models
     response = responses[0]
-    print(f"Coordinates: {response.Latitude()}°N {response.Longitude()}°E")
-    print(f"Elevation: {response.Elevation()} m asl")
-    print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()}s")
 
     # Process hourly data. The order of variables needs to be the same as requested.
     hourly = response.Hourly()
-    hourly_apparent_temperature = hourly.Variables(0).ValuesAsNumpy()
+    hourly_apparent_temperature = hourly.Variables(0).ValuesAsNumpy().round().astype(int)
     hourly_precipitation_probability = hourly.Variables(1).ValuesAsNumpy()
     hourly_precipitation = hourly.Variables(2).ValuesAsNumpy()
     hourly_weather_code = hourly.Variables(3).ValuesAsNumpy()
-    hourly_weather_sym = [WmoWeather.get(x).icon for x in hourly_weather_code]
-    hourly_pressure_msl = hourly.Variables(4).ValuesAsNumpy()
+    hourly_is_day = hourly.Variables(4).ValuesAsNumpy()
+    hourly_weather_sym = [WmoWeather.get(code, is_night=(is_day == 0)) for code, is_day in zip(hourly_weather_code, hourly_is_day)]
+    hourly_pressure_msl = hourly.Variables(5).ValuesAsNumpy()
 
-    hourly_data = {"date": pd.date_range(
+    # 1. Generate the DatetimeIndex and convert the timezone
+    dates_index = pd.date_range(
         start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
         end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
         freq=pd.Timedelta(seconds=hourly.Interval()),
         inclusive="left"
-    ).tz_convert("America/Los_Angeles"), "weather_sym": hourly_weather_sym,
-                   "apparent_temperature": hourly_apparent_temperature}
+    ).tz_convert("America/Los_Angeles")
+
+    # 2. Use a lambda map to format, strip leading zero from the hour, and insert the <br> tag
+    formatted_dates = dates_index.map(
+        lambda dt: f"{dt.strftime('%a')}<br>{dt.strftime('%I %p').lstrip('0')}"
+    )
+
+    # Using your timezone: "America/Los_Angeles"
+    now = pd.Timestamp.now(tz="America/Los_Angeles")
+
+    # 2. Round the current time down to the nearest hour
+    now_rounded_down = now.floor("h")
+
+    # 3. Find the integer index position in your index timeline
+    # method="ffill" ensures it snaps to the nearest preceding match (rounded down)
+    nearest_hour_index = dates_index.get_indexer([now_rounded_down], method="ffill")[0]
+
+    hourly_data = {
+        "date": formatted_dates[nearest_hour_index:nearest_hour_index+24],
+        "weather_sym": hourly_weather_sym[nearest_hour_index:nearest_hour_index+24],
+        "apparent_temperature": hourly_apparent_temperature[nearest_hour_index:nearest_hour_index+24]
+    }
         #,
                    #"precipitation_probability": hourly_precipitation_probability, "precipitation": hourly_precipitation,
                    #"pressure_msl": hourly_pressure_msl}
+
 
     hourly_dataframe = pd.DataFrame(data = hourly_data)
 

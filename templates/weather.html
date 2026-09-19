@@ -3,24 +3,21 @@
 {% block title %}Weather Dashboard{% endblock %}
 
 {% block content %}
-<!-- 1. Section Title -->
-<div class="container mt-5">
-    <h2 class="mb-4 text-center">Hourly Metrics Log</h2>
+<!-- Table Responsive container prevents layout breakages -->
+<div class="card shadow-sm mb-2 px-0">
+    <h3 class="mb-4 text-center">Hourly Forecast</h3>
 
-    <!-- Table Responsive container prevents layout breakages -->
-    <div class="container bg-white p-4 rounded shadow-sm">
-        <h3 class="mb-4 text-center">Hourly Forecast</h3>
-
+    <div class="card-body p-1">
         <!-- table-responsive ensures horizontal scrolling on small screens -->
         <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center mb-0">
+            <table class="table table-bordered table-sm align-middle text-center small mb-0 w-100">
 
                 <!-- Row 1: Hours -->
-                <thead class="table-light">
+                <thead class="table-dark">
                     <tr>
                         <th scope="col" class="text-start">Time</th>
-                        {% for row in weather_data %}
-                        <th scope="col" style="min-width: 90px;">{{ row.hour }}</th>
+                        {% for row in hourly_weather_data %}
+                        <th scope="col" style="min-width: 55px;">{{ row.date | safe }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -29,16 +26,21 @@
                     <!-- Row 2: Weather Symbols -->
                     <tr>
                         <th scope="row" class="text-start table-light">Weather</th>
-                        {% for row in weather_data %}
-                        <td class="fs-2">{{ row.weather_symbol }}</td>
+                        {% for row in hourly_weather_data %}
+                        <td>
+                            <img src="https://cdn.meteocons.com/3.0.0-next.10/svg-static/fill/{{ row.weather_sym }}.svg"
+                                alt="{{ row.weather_sym }}"
+                                width="36"
+                                height="36" />
+                        </td>
                         {% endfor %}
                     </tr>
 
                     <!-- Row 3: Apparent Temperature -->
                     <tr>
-                        <th scope="row" class="text-start table-light">Apparent Temp</th>
-                        {% for row in weather_data %}
-                        <td class="fw-bold text-muted">{{ row.apparent_temp }}</td>
+                        <th scope="row" class="text-start table-light">Temp (F)</th>
+                        {% for row in hourly_weather_data %}
+                        <td class="fw-bold text-muted">{{ row.apparent_temperature }}</td>
                         {% endfor %}
                     </tr>
                 </tbody>
