@@ -34,6 +34,12 @@ def transitwork():
     results = transit_tracker.lookup(input_list)
     return render_template("transitwork.html", results=results)
 
+@app.route("/transit/moda")
+def transitmoda():
+    input_list = [1097, 11508]
+    results = transit_tracker.lookup(input_list)
+    return render_template("transitmoda.html", results=results)
+
 @app.route("/weather/")
 def weather():
     input_coords = [45.55, -122.69] # Portland, OR
