@@ -50,9 +50,80 @@
     </div>
 </div>
 
-{% block weatherblock %}
+{% block weathergraphblock %}
 <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
     <h5 class="fw-bold text-secondary">Additional weather blocks</h5>
 </div>
+
+<!-- Container for the 2D Graph -->
+<div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+    <h5 class="fw-bold text-secondary">Temperature Comparison: Today vs. Tomorrow</h5>
+    <div style="position: relative; height:40vh; width:100%">
+        <canvas id="weatherChart"></canvas>
+    </div>
+</div>
+
+<!-- Load Chart.js CDN -->
+<script src="https://jsdelivr.net"></script>
+
+<script>
+    const ctx = document.getElementById('weatherChart').getContext('2d');
+
+    // Inject Jinja2 template arrays safely into JavaScript using | tojson
+    const labels = {{ weather_report.temp_compare.chart_dates | tojson | safe }};
+    const yesterdayData = {{ weather_report.temp_compare.yesterday_temps | tojson | safe }};
+    const todayData = {{ weather_report.temp_compare.today_temps | tojson | safe }};
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels, // X-axis hours/dates
+            datasets: [
+                {
+                    label: 'Yesterday',
+                    data: yesterdayData,
+                    borderColor: 'rgba(54, 162, 235, 1)', // Blue
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3, // Smooth lines
+                    fill: true
+                },
+                {
+                    label: 'Today',
+                    data: todayData,
+                    borderColor: 'rgba(255, 99, 132, 1)', // Red/Pink
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Apparent Temperature (°F)'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
 {% endblock %}
