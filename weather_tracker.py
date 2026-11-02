@@ -76,9 +76,9 @@ def get_hourly_weather_data(input_coords):
         )
     ]
     temp_compare_data = {
-        "chart_dates": formatted_dates[0:24],
-        "yesterday_temps": hourly_apparent_temperature[0:24],
-        "today_temps": hourly_apparent_temperature[24:48]
+        "chart_dates": formatted_dates[0:24].tolist(),
+        "yesterday_temps": hourly_apparent_temperature[0:24].tolist(),
+        "today_temps": hourly_apparent_temperature[24:48].tolist()
     }
         #,
                    #"precipitation_probability": hourly_precipitation_probability, "precipitation": hourly_precipitation,
