@@ -16,7 +16,7 @@
                 <thead class="table-dark">
                     <tr>
                         <th scope="col" class="text-start">Time</th>
-                        {% for row in hourly_weather_data %}
+                        {% for row in weather_report.hourly_weather %}
                         <th scope="col" style="min-width: 55px;">{{ row.date | safe }}</th>
                         {% endfor %}
                     </tr>
@@ -26,7 +26,7 @@
                     <!-- Row 2: Weather Symbols -->
                     <tr>
                         <th scope="row" class="text-start table-light">Weather</th>
-                        {% for row in hourly_weather_data %}
+                        {% for row in weather_report.hourly_weather %}
                         <td>
                             <img src="https://cdn.meteocons.com/3.0.0-next.10/svg-static/fill/{{ row.weather_sym }}.svg"
                                 alt="{{ row.weather_sym }}"
@@ -39,7 +39,7 @@
                     <!-- Row 3: Apparent Temperature -->
                     <tr>
                         <th scope="row" class="text-start table-light">Temp (F)</th>
-                        {% for row in hourly_weather_data %}
+                        {% for row in weather_report.hourly_weather %}
                         <td class="fw-bold text-muted">{{ row.apparent_temperature }}</td>
                         {% endfor %}
                     </tr>

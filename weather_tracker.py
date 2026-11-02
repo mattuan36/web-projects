@@ -63,23 +63,38 @@ def get_hourly_weather_data(input_coords):
     # method="ffill" ensures it snaps to the nearest preceding match (rounded down)
     nearest_hour_index = dates_index.get_indexer([now_rounded_down], method="ffill")[0]
 
-    hourly_data = {
-        "date": formatted_dates[nearest_hour_index:nearest_hour_index+24],
-        "weather_sym": hourly_weather_sym[nearest_hour_index:nearest_hour_index+24],
-        "apparent_temperature": hourly_apparent_temperature[nearest_hour_index:nearest_hour_index+24]
+    hourly_weather_data = [
+        {
+            "date": date,
+            "weather_sym": symbol,
+            "apparent_temperature": temp
+        }
+        for date, symbol, temp in zip(
+            formatted_dates[nearest_hour_index: nearest_hour_index + 24],
+            hourly_weather_sym[nearest_hour_index: nearest_hour_index + 24],
+            hourly_apparent_temperature[nearest_hour_index: nearest_hour_index + 24]
+        )
+    ]
+    temp_compare_data = {
+        "date_today": formatted_dates[0:24],
+        "today_temp": hourly_apparent_temperature[0:24],
+        "tomorrow_temp": hourly_apparent_temperature[24:48]
     }
         #,
                    #"precipitation_probability": hourly_precipitation_probability, "precipitation": hourly_precipitation,
                    #"pressure_msl": hourly_pressure_msl}
 
 
-    hourly_dataframe = pd.DataFrame(data = hourly_data)
+    #hourly_dataframe = pd.DataFrame(data = hourly_data)
 
     # Pass the data to the template as a list of dictionaries
-    hourly_records = hourly_dataframe.to_dict(orient='records')
+    #hourly_records = hourly_dataframe.to_dict(orient='records')
 
     #print("\nHourly data\n", hourly_dataframe)
-    return hourly_records
+    return {
+        "hourly_weather": hourly_weather_data,
+        "temp_compare": temp_compare_data,
+    }
 
 def main():
     input_coords = [45.55, -122.69]  # Portland, OR
