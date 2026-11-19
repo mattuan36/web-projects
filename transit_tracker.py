@@ -1,16 +1,22 @@
 # Main Driver class
 import requests
 import time
+from config import TRIMET_ID
 
 def query_api(locList):
-    APP_ID = 'DD09D08BE8A1CD85158AD99DB'
-    loc_ids = ",".join(map(str, locList))
+    #APP_ID = 'DD09D08BE8A1CD85158AD99DB'
+    #loc_ids = ",".join(map(str, locList))
 
     # API call
-    api_url = f'http://developer.trimet.org/ws/v2/arrivals/locIDs/{loc_ids}/appID/{APP_ID}'
+    #api_url = f'http://developer.trimet.org/ws/v2/arrivals/locIDs/{loc_ids}/appID/{APP_ID}'
 
     try:
-        response = requests.get(api_url)
+        #response = requests.get(api_url)
+        params = {"locIDs": ",".join(map(str, locList)), "appID": TRIMET_ID}
+        response = requests.get("https://developer.trimet.org/ws/v2/arrivals",
+            params=params,
+            timeout=10,
+        )
 
         # 1. Throws an error if the server returned a 400 or 500 range status code
         response.raise_for_status()

@@ -3,6 +3,8 @@
 
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
+
+import config
 import transit_tracker
 import weather_tracker
 
