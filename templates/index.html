@@ -4,9 +4,35 @@
 
 {% block content %}
     <div class="p-5 mb-4 bg-light rounded-3">
-        <div class="container-fluid py-5">
+        <div class="container-fluid py-2">
             <h1 class="display-5 fw-bold">Welcome to my Flask Application</h1>
-            <p class="col-md-8 fs-4">This website is styled using Bootstrap 5 and structured using Bootstrap-Flask macros.</p>
+            <p class="col-md-8 fs-4">This website is styled using Bootstrap 5 and structured using Bootstrap-Flask macros. See some of the apps I've made by clicking below!</p>
         </div>
+
+        <div class="container mt-2">
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <a href="{{ url_for('transit') }}" class="btn btn-outline-dark btn-lg w-100 h-100 p-4 text-start">
+                        <div class="fw-bold fs-4 mb-2">Transit Tracker</div>
+                        <div class="fs-6 opacity-75">Get transit updates from Trimet</div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a href="{{ url_for('weather') }}" class="btn btn-outline-dark btn-lg w-100 h-100 p-4 text-start">
+                        <div class="fw-bold fs-4 mb-2">Weather</div>
+                        <div class="fs-6 opacity-75">Do I need a jacket?</div>
+                    </a>
+                </div>
+                <div class="col-12 col-md-4">
+                    <a href="/flight/" class="btn btn-outline-dark btn-lg w-100 h-100 p-4 text-start">
+                        <div class="fw-bold fs-4 mb-2">Flight Tracker</div>
+                        <div class="fs-6 opacity-75">Are my flight prices cheaper?</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+
     </div>
 {% endblock %}

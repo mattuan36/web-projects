@@ -1,31 +1,81 @@
+"""Open-Meteo forecast and geocoding helpers."""
+
+from __future__ import annotations
+
 import openmeteo_requests
 
 import pandas as pd
+import requests
 import requests_cache
 from retry_requests import retry
 from weather_codes import WmoWeather
 
-def get_hourly_weather_data(input_coords):
-    # Setup the Open-Meteo API client with cache and retry on error
-    cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-    retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-    openmeteo = openmeteo_requests.Client(session = retry_session)
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 
-    # Make sure all required weather variables are listed here
-    # The order of variables in hourly or daily is important to assign them correctly below
-    url = "https://api.open-meteo.com/v1/forecast"
+# Order matters: the indices below refer to this list.
+HOURLY_VARIABLES = [
+    "apparent_temperature",
+    "precipitation_probability",
+    "precipitation",
+    "weather_code",
+    "is_day",
+    "pressure_msl",
+]
+
+
+def _http_session():
+    """Cached + retrying session, shared by the forecast and geocoding calls."""
+    cache_session = requests_cache.CachedSession('.cache', expire_after=3600)
+    return retry(cache_session, retries=5, backoff_factor=0.2)
+
+
+def geocode_location(query, count=5):
+    """Resolve a place name to coordinates. Returns [] when nothing matches."""
+    response = _http_session().get(
+        GEOCODE_URL,
+        params={"name": query, "count": count, "language": "en", "format": "json"},
+        timeout=15,
+    )
+    response.raise_for_status()
+    return [
+        {
+            "name": item["name"],
+            "region": item.get("admin1") or "",
+            "country": item.get("country") or "",
+            "country_code": item.get("country_code") or "",
+            "latitude": item["latitude"],
+            "longitude": item["longitude"],
+            "timezone": item.get("timezone") or "auto",
+        }
+        for item in response.json().get("results") or []
+    ]
+
+
+def _timezone_name(response):
+    """The SDK hands back bytes, and pandas needs a str."""
+    zone = response.Timezone()
+    if isinstance(zone, (bytes, bytearray)):
+        zone = zone.decode("utf-8")
+    return zone or "UTC"
+
+
+def get_hourly_weather_data(input_coords, timezone="auto"):
+    # Setup the Open-Meteo API client with cache and retry on error
+    openmeteo = openmeteo_requests.Client(session=_http_session())
 
     params = {
-        "latitude": input_coords[0],
-        "longitude": input_coords[1],
-        "hourly": ["apparent_temperature", "precipitation_probability", "precipitation", "weather_code", "is_day", "pressure_msl"],
-	    "temperature_unit": "fahrenheit",
-	    "precipitation_unit": "inch",
-        "timezone": "America/Los_Angeles",
+        "latitude": round(float(input_coords[0]), 4),
+        "longitude": round(float(input_coords[1]), 4),
+        "hourly": HOURLY_VARIABLES,
+        "temperature_unit": "fahrenheit",
+        "precipitation_unit": "inch",
+        # "auto" resolves from the coordinates; callers may pass an IANA name.
+        "timezone": timezone or "auto",
         "past_days": 1,  # Includes yesterday's data
         "forecast_days": 2,  # Includes today's data
     }
-    responses = openmeteo.weather_api(url, params = params)
+    responses = openmeteo.weather_api(FORECAST_URL, params=params, timeout=20)
 
     # Process first location. Add a for-loop for multiple locations or weather models
     response = responses[0]
@@ -40,28 +90,27 @@ def get_hourly_weather_data(input_coords):
     hourly_weather_sym = [WmoWeather.get(code, is_night=(is_day == 0)) for code, is_day in zip(hourly_weather_code, hourly_is_day)]
     hourly_pressure_msl = hourly.Variables(5).ValuesAsNumpy()
 
+    # The location's own zone, so "hour" means the hour there.
+    local_zone = _timezone_name(response)
+
     # 1. Generate the DatetimeIndex and convert the timezone
     dates_index = pd.date_range(
         start=pd.to_datetime(hourly.Time(), unit="s", utc=True),
         end=pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
         freq=pd.Timedelta(seconds=hourly.Interval()),
         inclusive="left"
-    ).tz_convert("America/Los_Angeles")
+    ).tz_convert(local_zone)
 
     # 2. Use a lambda map to format, strip leading zero from the hour, and insert the <br> tag
     formatted_dates = dates_index.map(
         lambda dt: f"{dt.strftime('%a')}<br>{dt.strftime('%I %p').lstrip('0')}"
     )
 
-    # Using your timezone: "America/Los_Angeles"
-    now = pd.Timestamp.now(tz="America/Los_Angeles")
+    # 3. Find the position of the current local hour in the timeline
+    now_rounded_down = pd.Timestamp.now(tz=local_zone).floor("h")
 
-    # 2. Round the current time down to the nearest hour
-    now_rounded_down = now.floor("h")
-
-    # 3. Find the integer index position in your index timeline
     # method="ffill" ensures it snaps to the nearest preceding match (rounded down)
-    nearest_hour_index = dates_index.get_indexer([now_rounded_down], method="ffill")[0]
+    nearest_hour_index = max(0, dates_index.get_indexer([now_rounded_down], method="ffill")[0])
 
     hourly_weather_data = [
         {
@@ -80,25 +129,17 @@ def get_hourly_weather_data(input_coords):
         "yesterday_temps": hourly_apparent_temperature[0:24].tolist(),
         "today_temps": hourly_apparent_temperature[24:48].tolist()
     }
-        #,
-                   #"precipitation_probability": hourly_precipitation_probability, "precipitation": hourly_precipitation,
-                   #"pressure_msl": hourly_pressure_msl}
 
-
-    #hourly_dataframe = pd.DataFrame(data = hourly_data)
-
-    # Pass the data to the template as a list of dictionaries
-    #hourly_records = hourly_dataframe.to_dict(orient='records')
-
-    #print("\nHourly data\n", hourly_dataframe)
     return {
         "hourly_weather": hourly_weather_data,
         "temp_compare": temp_compare_data,
     }
 
+
 def main():
     input_coords = [45.55, -122.69]  # Portland, OR
     get_hourly_weather_data(input_coords)
+
 
 if __name__ == "__main__":
     main()

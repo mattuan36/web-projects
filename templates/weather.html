@@ -3,9 +3,41 @@
 {% block title %}Weather Dashboard{% endblock %}
 
 {% block content %}
-<!-- Table Responsive container prevents layout breakages -->
+<!-- Location search: plain GET so results are shareable and reload-safe -->
+<form class="row g-2 align-items-center mb-3" method="get" action="{{ url_for('weather') }}">
+    <div class="col">
+        <label for="q" class="visually-hidden">Location</label>
+        <input class="form-control" id="q" name="q" value="{{ query }}"
+               placeholder="City or place, e.g. Chicago" autocomplete="off">
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+    <div class="col-auto">
+        <button type="button" class="btn btn-outline-secondary" id="useLocation"
+                data-url="{{ url_for('weather') }}">Use my location</button>
+    </div>
+    <div class="col-12">
+        <p class="small text-muted mb-0" id="locateMessage"></p>
+    </div>
+</form>
+
+{% if error %}
+<div class="alert alert-warning py-2">{{ error }}</div>
+{% endif %}
+
+{% if matches %}
+<p class="small text-muted">
+    Other matches:
+    {% for m in matches %}
+        <a href="{{ url_for('weather', lat=m.latitude, lon=m.longitude, name=m.name) }}">{{ m.name }}{% if m.region %}, {{ m.region }}{% endif %}{% if m.country %}, {{ m.country }}{% endif %}</a>{% if not loop.last %} &middot; {% endif %}
+    {% endfor %}
+</p>
+{% endif %}
+
+{% if weather_report %}
 <div class="card shadow-sm mb-2 px-0">
-    <h3 class="mb-4 text-center">Hourly Forecast</h3>
+    <h3 class="mb-4 text-center">Hourly Forecast{% if place %} &mdash; {{ place }}{% endif %}</h3>
 
     <div class="card-body p-1">
         <!-- table-responsive ensures horizontal scrolling on small screens -->
@@ -50,14 +82,17 @@
     </div>
 </div>
 
-{% block weathergraphblock %}
 <!-- Container for the 2D Graph -->
 <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
     <div style="position: relative; height:40vh; width:100%">
         <canvas id="weatherChart"></canvas>
     </div>
 </div>
+{% endif %}
+{% endblock %}
 
+{% block scripts %}
+{% if weather_report %}
 <!-- Load Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -79,8 +114,6 @@
                     data: yesterdayData,
                     borderColor: 'rgba(134, 167, 189, 0.4)', // Grey
                     backgroundColor: 'rgba(134, 167, 189, 0.1)',
-                    //borderColor: 'rgba(54, 162, 235, 1)', // Blue
-                    //backgroundColor: 'rgba(54, 162, 235, 0.1)',
                     borderWidth: 2,
                     tension: 0.3, // Smooth lines
                     fill: true
@@ -90,8 +123,6 @@
                     data: todayData,
                     borderColor: 'rgba(54, 162, 235, 1)', // Blue
                     backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                    //borderColor: 'rgba(255, 99, 132, 1)', // Red/Pink
-                    //backgroundColor: 'rgba(255, 99, 132, 0.1)',
                     borderWidth: 2,
                     tension: 0.3,
                     fill: true
@@ -124,5 +155,35 @@
         }
     });
 </script>
-{% endblock %}
+{% endif %}
+
+<script>
+    // "Use my location": ask the browser, then reload with ?lat=&lon=
+    const locateButton = document.getElementById('useLocation');
+    const locateMessage = document.getElementById('locateMessage');
+
+    if (!('geolocation' in navigator)) {
+        locateButton.hidden = true;
+    } else {
+        locateButton.addEventListener('click', () => {
+            locateButton.disabled = true;
+            locateMessage.textContent = 'Finding your location…';
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude.toFixed(4);
+                    const lon = position.coords.longitude.toFixed(4);
+                    window.location.assign(`${locateButton.dataset.url}?lat=${lat}&lon=${lon}`);
+                },
+                (err) => {
+                    locateButton.disabled = false;
+                    locateMessage.textContent = err.code === err.PERMISSION_DENIED
+                        ? 'Location permission denied — search by name instead.'
+                        : 'Could not get your location — search by name instead.';
+                },
+                { timeout: 10000, maximumAge: 300000 }
+            );
+        });
+    }
+</script>
 {% endblock %}
